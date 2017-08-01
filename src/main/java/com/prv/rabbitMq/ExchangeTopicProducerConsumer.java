@@ -1,27 +1,28 @@
 package com.prv.rabbitMq;
 
+import com.prv.rabbitMq.message.ExchangeMessageProducer;
 import com.prv.rabbitMq.message.MessageConsumer;
-import com.prv.rabbitMq.message.QueueMessageProducer;
 import com.prv.rabbitMq.service.RabbitService;
 
-public class SingleProducerConsumer {
+public class ExchangeTopicProducerConsumer {
 
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) {
 		String serverUri = "amqp://admin:admin@192.168.99.100:5672/my_vhost";
-		String queueName = "Testqueue1";
+		String exchangeName = "wdp-test";
+		String queueName = "policy-queue";
+		String bindingKey = "v2.#";
+		String routingKey = "v2.create";
 
 		RabbitService rabbitService = new RabbitService(serverUri);
-		rabbitService.deleteQueue(queueName);
-		rabbitService.createQueue(queueName);
+		rabbitService.createExchangeAndQueueAndBindQueue(exchangeName, queueName, bindingKey);
 
-		QueueMessageProducer producer = new QueueMessageProducer(queueName, serverUri);
+		ExchangeMessageProducer producer = new ExchangeMessageProducer(serverUri, exchangeName, routingKey);
 		Thread producerThread = new Thread(producer);
 		producerThread.start();
-
-		Thread.sleep(3000);
 
 		MessageConsumer consumer = new MessageConsumer(serverUri, queueName);
 		Thread consumerThread = new Thread(consumer);
 		consumerThread.start();
 	}
+
 }
